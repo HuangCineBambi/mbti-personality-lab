@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="description" content="MBTI人格鉴定所——废柴题壳，正经计分，28题测出你的16型人格与专属人设卡">
+<title>MBTI人格鉴定所</title>
+<style>
+:root{
+  --pink:#FFB7C5; --pink-deep:#FF8FAB; --cream:#FFF6E9; --mint:#B8E6D3;
+  --lavender:#D9C7F0; --butter:#FFE7A0; --sky:#A8D8F0; --peach:#FFCBB0;
+  --ink:#5B4A54; --ink-soft:#8A7A82; --card:#FFFFFF;
+  --shadow:0 6px 20px rgba(180,140,160,.18);
+  --radius:20px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{font-size:16px}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Segoe UI",sans-serif;
+  color:var(--ink); background:var(--cream); line-height:1.6;
+  background-image:radial-gradient(circle at 12% 8%,rgba(255,183,197,.35) 0 22%,transparent 23%),
+    radial-gradient(circle at 88% 15%,rgba(184,230,211,.4) 0 18%,transparent 19%),
+    radial-gradient(circle at 85% 88%,rgba(217,199,240,.4) 0 20%,transparent 21%),
+    radial-gradient(circle at 8% 85%,rgba(255,231,160,.5) 0 15%,transparent 16%);
+  background-attachment:fixed; min-height:100vh;
+}
+#app{max-width:640px;margin:0 auto;padding:20px 16px calc(28px + env(safe-area-inset-bottom))}
+/* ---------- 通用 ---------- */
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px 20px;margin-bottom:16px}
+.btn{
+  display:block;width:100%;border:none;cursor:pointer;font-family:inherit;
+  background:linear-gradient(135deg,var(--pink) 0%,var(--pink-deep) 100%);
+  color:#fff;font-size:1.05rem;font-weight:700;border-radius:16px;
+  padding:14px 20px;transition:transform .15s ease,box-shadow .15s ease;box-shadow:0 4px 14px rgba(255,143,171,.4);
+}
+.btn:active{transform:scale(.97)}
+.btn.ghost{background:#fff;color:var(--ink);border:2px solid var(--pink);box-shadow:none;font-weight:600}
+.btn.mini{width:auto;display:inline-block;padding:8px 18px;font-size:.9rem;border-radius:12px}
+.tag{display:inline-block;background:var(--butter);color:#9A7B2D;border-radius:999px;padding:2px 12px;font-size:.8rem;font-weight:600;margin:2px 3px}
+.pill{display:inline-flex;align-items:center;gap:6px;background:#fff;border:2px dashed var(--pink);border-radius:999px;padding:4px 14px;font-size:.85rem;color:var(--ink-soft)}
+h1,h2,h3{line-height:1.35}
+.muted{color:var(--ink-soft);font-size:.85rem}
+.center{text-align:center}
+/* ---------- 首页 ---------- */
+.hero{text-align:center;padding:34px 18px 26px}
+.hero .logo{font-size:3.6rem;display:block;margin-bottom:8px;filter:drop-shadow(0 4px 8px rgba(255,143,171,.35))}
+.hero h1{font-size:1.9rem;letter-spacing:.05em}
+.hero h1 .en{display:block;font-size:.75rem;color:var(--ink-soft);letter-spacing:.35em;margin-top:6px;font-weight:400}
+.hero .slogan{margin:14px auto 4px;max-width:26em}
+.stat-row{display:flex;gap:10px;justify-content:center;margin:18px 0 4px;flex-wrap:wrap}
+.stat-row .pill b{color:var(--ink)}
+/* ---------- 答题页 ---------- */
+.progress-wrap{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.progress-bar{flex:1;height:10px;background:#F3E3E8;border-radius:999px;overflow:hidden}
+.progress-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--mint),var(--pink));border-radius:999px;transition:width .3s ease}
+.progress-num{font-size:.85rem;color:var(--ink-soft);font-weight:700;white-space:nowrap}
+.qcard{position:relative;overflow:hidden}
+.qcard .qtag{margin-bottom:10px}
+.qcard h2{font-size:1.18rem;margin-bottom:20px}
+.opts{display:flex;flex-direction:column;gap:12px}
+.opt{
+  border:2.5px solid #F0E0E6;background:#FFFDFB;border-radius:16px;padding:14px 16px;
+  cursor:pointer;font-size:.98rem;transition:all .18s ease;display:flex;gap:10px;align-items:flex-start;text-align:left;
+}
+.opt .badge{flex:none;width:26px;height:26px;border-radius:50%;background:#F6E8ED;color:var(--ink-soft);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.85rem;margin-top:1px}
+.opt:active{transform:scale(.98)}
+.opt.picked{border-color:var(--pink-deep);background:#FFF0F4;box-shadow:0 4px 12px rgba(255,143,171,.25)}
+.opt.picked .badge{background:var(--pink-deep);color:#fff}
+@media (hover:hover){.opt:hover{border-color:var(--pink);background:#FFF7FA}}
+.q-nav{display:flex;justify-content:space-between;align-items:center;margin-top:18px}
+.q-nav .back{background:none;border:none;color:var(--ink-soft);font-size:.9rem;cursor:pointer;padding:8px 4px;font-family:inherit}
+.q-nav .back:disabled{opacity:.3;cursor:default}
+/* ---------- 结果页 ---------- */
+.result-hero{text-align:center;position:relative;overflow:hidden}
+.result-hero .type{font-size:3rem;font-weight:900;letter-spacing:.08em;background:linear-gradient(120deg,#FF8FAB,#B88FD9);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.result-hero .role-emoji{font-size:4rem;display:block;filter:drop-shadow(0 6px 10px rgba(180,140,160,.3))}
+.result-hero .role-name{font-size:1.5rem;font-weight:800;margin-top:6px}
+.result-hero .role-title{color:var(--ink-soft);margin-top:2px}
+.result-hero .quote{font-style:italic;color:var(--ink-soft);margin-top:12px}
+.dims{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:480px){.dims{grid-template-columns:1fr}}
+.dim{background:#FFF9FB;border-radius:14px;padding:12px 14px}
+.dim .dim-head{display:flex;justify-content:space-between;font-weight:700;font-size:.9rem;margin-bottom:8px}
+.dim .dim-bar{height:8px;border-radius:999px;background:linear-gradient(90deg,var(--sky) 50%,#F0E0E6 50%)}
+.dim .dim-bar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--sky),var(--pink-deep))}
+.dim .pct{display:flex;justify-content:space-between;font-size:.78rem;color:var(--ink-soft);margin-top:5px}
+.egg{display:flex;gap:12px;background:linear-gradient(135deg,#FFF3F6,#F3F0FC);border-radius:14px;padding:12px 14px;margin-bottom:10px;align-items:flex-start}
+.egg .egg-emoji{font-size:1.6rem;flex:none}
+.egg .egg-name{font-weight:800;font-size:.92rem}
+.egg .egg-text{font-size:.86rem;color:var(--ink-soft);margin-top:2px}
+.report{background:#FFFBF2;border-radius:14px;padding:14px 16px;margin-bottom:10px}
+.report .rep-head{display:flex;justify-content:space-between;align-items:baseline}
+.report .rep-name{font-weight:800}
+.report .rep-val{font-size:1.15rem;font-weight:900;color:#D98E23}
+.report .rep-bar{height:10px;background:#F5EBDA;border-radius:999px;margin:8px 0 6px;overflow:hidden}
+.report .rep-bar i{display:block;height:100%;background:linear-gradient(90deg,#FFD98E,#FF9F68);border-radius:999px}
+.report .rep-note{font-size:.82rem;color:var(--ink-soft)}
+/* ---------- 图鉴 ---------- */
+.dex-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px}
+.dex-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media(max-width:520px){.dex-grid{grid-template-columns:repeat(3,1fr)}}
+.dex-cell{background:#FFF;border-radius:14px;padding:10px 6px;text-align:center;box-shadow:0 3px 10px rgba(180,140,160,.12)}
+.dex-cell .d-emoji{font-size:1.7rem;display:block}
+.dex-cell .d-type{font-weight:800;font-size:.85rem;margin-top:3px}
+.dex-cell .d-name{font-size:.68rem;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dex-cell.locked{opacity:.42;filter:grayscale(.8)}
+.dex-cell.locked .d-emoji{filter:blur(1px)}
+.eggdex .egg.done{background:linear-gradient(135deg,#EFFAF4,#F3F0FC);border:1.5px dashed #9CCFB8}
+.hist-item{display:flex;justify-content:space-between;align-items:center;padding:10px 4px;border-bottom:1px dashed #F0E0E6;font-size:.9rem}
+.hist-item:last-child{border-bottom:none}
+.hist-item .h-type{font-weight:800}
+/* ---------- 弹窗 ---------- */
+.toast{
+  position:fixed;left:50%;top:18px;transform:translateX(-50%) translateY(-120%);z-index:99;
+  background:var(--ink);color:#fff;padding:10px 22px;border-radius:999px;font-size:.9rem;font-weight:600;
+  box-shadow:0 8px 24px rgba(0,0,0,.25);transition:transform .35s cubic-bezier(.2,1.4,.4,1);max-width:88vw;text-align:center;
+}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.footer-note{text-align:center;color:var(--ink-soft);font-size:.75rem;margin-top:22px;opacity:.8}
+.egg-pop{
+  position:fixed;inset:0;background:rgba(60,40,50,.45);z-index:98;display:flex;align-items:center;justify-content:center;padding:20px;
+  opacity:0;pointer-events:none;transition:opacity .3s;
+}
+.egg-pop.show{opacity:1;pointer-events:auto}
+.egg-pop .inner{
+  background:linear-gradient(150deg,#FFF6E9,#FFE9F0);border-radius:22px;padding:26px 22px;max-width:340px;width:100%;text-align:center;
+  transform:scale(.8);transition:transform .3s cubic-bezier(.2,1.4,.4,1);box-shadow:0 20px 50px rgba(60,30,40,.35);
+}
+.egg-pop.show .inner{transform:scale(1)}
+.egg-pop .pop-emoji{font-size:3.2rem;display:block;animation:bounce .8s ease infinite alternate}
+@keyframes bounce{from{transform:translateY(0)}to{transform:translateY(-8px)}}
+.egg-pop h3{margin:10px 0 8px}
+.egg-pop p{font-size:.9rem;color:var(--ink-soft)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.fadeup{animation:fadeUp .45s ease both}
+.fadeup.d1{animation-delay:.08s}.fadeup.d2{animation-delay:.16s}.fadeup.d3{animation-delay:.24s}.fadeup.d4{animation-delay:.32s}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="toast" id="toast"></div>
+<div class="egg-pop" id="eggPop"><div class="inner" id="eggPopInner"></div></div>
+<script>
+// MBTI人格鉴定所 - 题库数据
+// 维度: E/I（能量方向）、S/N（信息获取）、T/F（决策方式）、J/P（生活态度）
+// 每题: q=题干, A/B=两个选项, a/b=选择该项时 +1 的维度极
+// 题目顺序打乱排列，共 28 题（每维度 7 题）
+
+const QUESTIONS = [
+  // ===== E/I 维度（7 题）=====
+  { q: "周五晚上八点，你的手机弹出三个饭局邀请，你：", A: "全都想去！人多了才热闹，先答应再想怎么串场", a: "E", B: "装没看见。电量只剩 20%，还是回家躺着吧", b: "I" },
+  { q: "电梯里遇到不太熟的同事，你会：", A: "主动聊两句：'今天天气哈？周末有啥安排？'", a: "E", B: "掏出手机假装很忙，祈祷电梯快点到", b: "I" },
+  { q: "朋友问你'在吗'，你的第一反应：", A: "秒回'在！咋了咋了'，顺便发个表情包", a: "E", B: "'等会儿，让我组织一下语言'", b: "I" },
+  { q: "团建活动你更期待：", A: "KTV 麦克风焊在手里，或者桌游局当主持人", a: "E", B: "有沙发角落可以窝着，最好还有猫", b: "I" },
+  { q: "独自待一整个周末，你会：", A: "主动约人！宅到第二天就浑身难受", a: "E", B: "如鱼得水。看书、追剧、发呆，充电拉满", b: "I" },
+  { q: "刚认识的新朋友，你通常：", A: "聊半小时就知道对方的前任故事", a: "E", B: "认识三年还在'今天天气不错'的阶段", b: "I" },
+  { q: "语音消息 60 秒 x 5 条发来了，你：", A: "直接回一条更长的语音", a: "E", B: "戴上耳机深吸一口气，做好心理建设再听", b: "I" },
+
+  // ===== S/N 维度（7 题）=====
+  { q: "朋友描述一个新手机，你最想先知道：", A: "多少钱？续航多少？跑分多少？", a: "S", B: "这玩意儿能改变人类的生活方式吗？", b: "N" },
+  { q: "说明书摆在你面前，你会：", A: "一步不落地照做，做不出来的都是玄学", a: "S", B: "什么说明书？我拆了再说，装不回去再说", b: "N" },
+  { q: "你更喜欢的聊天话题是：", A: "最近吃了啥、买了啥、哪个超市打折", a: "S", B: "如果人类灭亡只剩你一个，你会先干嘛", b: "N" },
+  { q: "回忆上次旅行，你首先想到：", A: "民宿一晚 380，打车花了 200，牛肉面真香", a: "S", B: "那个落日下的大海，让我想到人生海海", b: "N" },
+  { q: "收拾行李箱，你的风格是：", A: "列清单，按天配好穿搭，充电器放左前袋", a: "S", B: "先扔一堆进去，'差不多得了'，反正酒店有的买", b: "N" },
+  { q: "同事说'这方案有股怪味儿'，你：", A: "具体是哪里怪？第几页？字体还是配色？", a: "S", B: "懂了！要的是那种'高级感'对吧？", b: "N" },
+  { q: "学做一道新菜，你会：", A: "精确到克的菜谱 + 计时器，一步都不带差的", a: "S", B: "菜谱？凭感觉。盐少许是多少？我说了算", b: "N" },
+
+  // ===== T/F 维度（7 题）=====
+  { q: "朋友考试挂了，来找你哭诉，你：", A: "先看错在哪，下次怎么复习，问题出在哪个环节", a: "T", B: "抱抱！这老师出题也太变态了吧！", b: "F" },
+  { q: "对象问'我和游戏哪个重要'，你：", A: "'游戏能陪我一辈子，你能吗'（并失去对象）", a: "T", B: "'当然是你！'（内心：这题是送命题）", b: "F" },
+  { q: "网购收到有瑕疵的商品，你：", A: "截图、拍视频、附证据，找客服走流程索赔", a: "T", B: "算了算了，退换太麻烦，就当交个朋友", b: "F" },
+  { q: "看剧时你更容易被什么打动：", A: "剧情逻辑严密、没有 bug，看完酣畅淋漓", a: "T", B: "主角哭了我也哭，BGM 一响眼泪就下来", b: "F" },
+  { q: "同事的方案有明显漏洞，你：", A: "当众指出：第 3 页数据对不上，这不行", a: "T", B: "会后私聊：'那个……有个小地方要不要再看看？'", b: "F" },
+  { q: "'对不起'和'我爱你'哪个更难说出口：", A: "对不起。错就是错，但道理我都懂，凭什么先低头", a: "T", B: "我爱你。对不起张口就来，我爱你得酝酿三天", b: "F" },
+  { q: "朋友做了一桌很难吃的菜，你：", A: "'盐放多了，肉也柴了。不过米饭还行'", a: "T", B: "'太好吃了！'（内心：明天我自己带饭）", b: "F" },
+
+  // ===== J/P 维度（7 题）=====
+  { q: "旅行前一周，你的行程表：", A: "精确到小时，门票都买好了，Plan B 都备好了", a: "J", B: "目的地定了，其他……落地再说", b: "P" },
+  { q: "deadline 还有三天，你：", A: "还剩三天？我早就交了", a: "J", B: "还有三天呢！今天先打两把游戏", b: "P" },
+  { q: "你的桌面（电脑+实体），哪种更接近：", A: "分类清晰的文件夹，名字都是'2026项目-最终版-真最终版'", a: "J", B: "'新建文件夹(7)'里面套着'新建文件夹(2)'", b: "P" },
+  { q: "计划好的周末突然被临时邀约打乱：", A: "有点烦。都说了周六要洗窗帘，我的人生不能乱", a: "J", B: "走！窗帘是死的，人是活的", b: "P" },
+  { q: "点外卖时你通常：", A: "固定那三家轮着点，闭眼选不出错", a: "J", B: "每次都翻到列表最底下，寻找新大陆", b: "P" },
+  { q: "Netflix 上有个剧让你上头，你：", A: "每晚看两集，再上头也得按计划来", a: "J", B: "通宵刷完，明天顶着黑眼圈上班/学", b: "P" },
+  { q: "宜家说明书只给了图没给字，你：", A: "先分类零件、分步骤执行，工欲善其事必先利其器", a: "J", B: "图？什么图？我已经装到第三步了", b: "P" },
+];
+
+// MBTI人格鉴定所 - 16 位拟人角色设定
+// name=角色名, title=称号, emoji=代表表情, quote=口头禅, bio=性格小传, tags=标签, rare=稀有度标记(1普通/2稀有/3神秘)
+const ROLES = {
+  "INTJ": { name: "诸葛再世", title: "运筹帷幄的幕后军师", emoji: "♟️", quote: "我早就说过了。", bio: "别人在睡觉，他在推演你的下一步。表情不多，脑子里已经跑了800个方案。表面上'随便'，实际上'必须按我的来'。他的世界里没有意外，只有预案。", tags: ["策略大师", "独行侠", "人间清醒"] },
+  "INTP": { name: "祖传科学家", title: "灵魂出窍的思考者", emoji: "🧪", quote: "等等，这个逻辑不对。", bio: "和朋友聊天聊着聊着人就没了——灵魂去思考宇宙了。房間乱得像被抢劫，但脑子里的理论体系井井有条。约会迟到，是因为在路上发现了一只有趣的虫子。", tags: ["脑内宇宙", "拖延之神", "好奇宝宝"] },
+  "ENTJ": { name: "霸总本总", title: "天生的指挥官", emoji: "👑", quote: "听我说，就这么办。", bio: "群里发通知的是他，规划路线的是他，催大家交钱的是他。朋友聚会有他在，就永远不缺方向。缺点是：连看电影都要做PPT分析剧情走向。", tags: ["行动派", "气场两米八", "卷王之王"] },
+  "ENTP": { name: "抬杠小王子", title: "专职唱反调的辩论鬼才", emoji: "🃏", quote: "我不这么认为——", bio: "你说东他偏说西，不是杠，是'真理值得被辩论'。点子多到能开创意公司，可惜一半死在'懒得执行'。朋友又爱又恨：爱他有趣，恨他嘴欠。", tags: ["鬼点子批发商", "嘴强王者", "自由灵魂"] },
+  "INFJ": { name: "神秘预言家", title: "温柔又通透的心灵导师", emoji: "🔮", quote: "我懂你的感受。", bio: "聚会结束会默默留下来帮忙收拾的人。看人极准，三句话就知道你最近过得好不好。表面平静，内心写了一部长篇小说。朋友圈文案：仅自己可见。", tags: ["人间清醒", "温柔刀", "读心术十级"] },
+  "INFP": { name: "多愁善感的诗人", title: "住在云朵里的理想主义者", emoji: "🌸", quote: "这个世界会好吗？", bio: "听到一首歌能emo一下午，看到流浪猫会蹲下来聊十分钟。房间贴满了句子，日记本锁了三层。梦想清单很长，行动清单很短，但每个梦都认真做过。", tags: ["玻璃心", "脑补大王", "温柔本身"] },
+  "ENFJ": { name: "人间小太阳", title: "行走的暖宝宝班长", emoji: "🌻", quote: "没事，有我在！", bio: "记得每个人的生日，聚餐时负责把冷落的人拉进话题。自己的心事却只对枕头说。当他说'我没事'的时候，事情通常很大条。", tags: ["团宠制造机", "老好人", "气氛担当"] },
+  "ENFP": { name: "快乐小狗", title: "三分钟热度体验官", emoji: "🐶", quote: "哇！这个也太好玩了吧！！", bio: "上周爱上尤克里里，这周沉迷烘焙，下周预计环游世界。朋友评价：'他是真的开心，也是真的啥也没坚持。'手机里300个APP，常用5个，其他的都在等一个契机。", tags: ["电量永动机", "社交悍匪", "好奇心爆棚"] },
+  "ISTJ": { name: "靠谱老黄牛", title: "行走的Excel表格", emoji: "📋", quote: "按规矩来。", bio: "说好9点集合他8:50到，说好AA他精确到分。别人旅行靠心情，他旅行靠清单。人生信条：答应的事，天塌了也得办完。", tags: ["靠谱本谱", "细节控", "沉默的大多数"] },
+  "ISFJ": { name: "守护型小天使", title: "背后默默付出的暖水壶", emoji: "🫖", quote: "我还好，你们先吃。", bio: "加班时给你带宵夜的是他，你需要时永远在线的是他，可他自己难过时却回复'没什么'。世界因他温柔，他常被世界忽略。今天，请对身边的ISFJ说声谢谢。", tags: ["奉献型人格", "记性超好", "人间小棉袄"] },
+  "ESTJ": { name: "社区大管家", title: "人形规章制度", emoji: "🏛️", quote: "这事儿得有个章程。", bio: "家族群里辟谣的是他，业主群里维权的是他，公司里流程最熟的还是他。看不惯低效，受不了磨叽。嘴上凶，事情全给安排得明明白白。", tags: ["效率狂魔", "操心命", "务实派"] },
+  "ESFJ": { name: "国民好闺蜜", title: "气氛组终身成就奖", emoji: "🍯", quote: "吃了吗？最近咋样呀？", bio: "聚会没有他会冷场，有他会很吵（褒义）。对朋友的关心具体到'你昨天那件事后来怎么样了'。如果有一天他突然安静了，请立刻抱住他。", tags: ["热点雷达", "人情世故满分", "聚会灵魂"] },
+  "ISTP": { name: "沉默的手艺人", title: "话少但全能的扫地僧", emoji: "🔧", quote: "嗯。（翻译：我在听）", bio: "电脑坏了找他，灯泡坏了找他，门锁卡了也找他。他一边说'真麻烦'一边已经修好了。朋友圈三年没更新，突然发一条：骑摩托进藏了。", tags: ["冷酷全能王", "独狼玩家", "惜字如金"] },
+  "ISFP": { name: "人间艺术家", title: "低调的美的收藏家", emoji: "🎨", quote: "好看就完事了。", bio: "穿搭有风格，拍照有构图，朋友圈随手一发就是壁纸。不太争不太抢，但有自己的小宇宙。你可以不懂他，但不能说他审美不行。", tags: ["审美天花板", "社恐温柔", "活在当下"] },
+  "ESTP": { name: "肾上腺素经理", title: "哪儿刺激去哪儿的行动派", emoji: "🏄", quote: "想那么多干嘛，先干了再说！", bio: "滑雪、跳伞、剧本杀凶手专业户，人生格言是'怂就输一辈子'。聚会他最晚到，气氛他带最high。唯一的缺点：钱包和膝盖总有一个先报废。", tags: ["极限玩家", "即兴大师", "大心脏"] },
+  "ESFP": { name: "全场焦点本人", title: "天生的舞台占有者", emoji: "🎤", quote: "看我看我！哈哈哈哈哈！", bio: "走到哪都自带BGM和聚光灯。朋友圈九宫格全是他的笑容，笑声在三条街外都能听到。有人说他吵，更多的人说：有他在真好。", tags: ["氛围感拉满", "表现欲王者", "开心果"] }
+};
+
+// MBTI人格鉴定所 - 彩蛋系统文案
+// ============ 1. 极端倾向彩蛋（某维度 7/7 全倾斜时触发）============
+const EXTREME_EGGS = {
+  "E": { name: "社交永动机", emoji: "🔋", text: "7 题全选外向？！你的社交电量是核动力级的。建议：适当接触太阳以外的光源。" },
+  "I": { name: "社交电量仅剩 1%", emoji: "🪫", text: "7 题全选内向！你的灵魂老家是充电桩，人类的悲欢并不相通，但你的手机电量和你很相通。" },
+  "S": { name: "人形扫描仪", emoji: "🔍", text: "务实七连击！你眼里的世界是像素级的，别人看晚霞，你看的是'明天下雨概率 80%，得收衣服'。" },
+  "N": { name: "脑内宇宙漫游者", emoji: "🌌", text: "七题全飘！你人在工位，魂在银河系边缘开会。回到地球时记得跟同事打个招呼。" },
+  "T": { name: "绝对理智机器", emoji: "🤖", text: "理性值拉满！你安慰人之前会先做归因分析。朋友哭的时候，你在她泪水中看到了数据。" },
+  "F": { name: "人间水蜜桃", title: "", emoji: "🫧", text: "感性全垒打！你的眼泪腺直通心脏，看《忠犬八公》能哭出一部小时代。" },
+  "J": { name: "人生规划局局长", emoji: "📅", text: "计划狂魔七连！你的 2077 年度计划已经排好了，对，就是那个还没发生的 2077 年。" },
+  "P": { name: "随缘大师", emoji: "🍃", text: " spontaneity 拉满！你的座右铭：计划赶不上变化，变化赶不上我躺下的速度。" }
+};
+
+// ============ 2. 答题行为彩蛋 ============
+// 触发条件在程序逻辑中判定
+const BEHAVIOR_EGGS = {
+  "speedrun":  { name: "冲动战士", emoji: "⚡", cond: "全程平均每题 < 2 秒", text: "答题快到系统差点没反应过来。建议人生大事也这么果断。" },
+  "overthink": { name: "纠结体质", emoji: "🌀", cond: "某题停留 > 15 秒", text: "有道题你想了超过 15 秒……都二选一了还有什么可想的！但这很你。" },
+  "flipflop":  { name: "反复横跳大师", emoji: "↩️", cond: "改答案 ≥ 3 次", text: "你至少改了 3 次答案。选择困难不是病，是你对生活的深情。" },
+  "slowpoke":  { name: "沉思者", emoji: "🗿", cond: "总耗时 > 8 分钟", text: "你花了 8 分钟以上，每道题都深思熟虑。这份郑重，值得一张思考者雕像。" },
+  "goldilock": { name: "人间节拍器", emoji: "🎯", cond: "答题节奏极其均匀", text: "每题答题时间几乎一样，稳得像节拍器。你是人形匀速直线运动吗？" }
+};
+
+// ============ 3. 另类小报告（每次固定输出，数值由答案计算）============
+const FUN_REPORTS = [
+  { name: "废柴指数", emoji: "🥔", desc: "科学完全不严谨地衡量你的废柴浓度" },
+  { name: "社交电量", emoji: "🔋", desc: "你今晚聚会前的电量预估" },
+  { name: "嘴硬指数", emoji: "🪨", desc: "打死也不说'我错了'的程度" },
+  { name: "好运浓度", emoji: "🍀", desc: "近期水逆指数反向指标" }
+];
+
+// ============ 4. 题目触发彩蛋（特定题目选特定选项触发）============
+// qIndex=题目编号（0起）, choice=A/B, name=彩蛋名, text=隐藏文案
+const QUESTION_EGGS = [
+  { qIndex: 0,  choice: "B", key: "homebody",   name: "宅之力·觉醒", emoji: "🏠", text: "三场饭局都拒了？检测到高浓度宅力。鉴定所悄悄给你颁发了'沙发守护神'勋章。" },
+  { qIndex: 4,  choice: "B", key: "solo_weekend", name: "独处大师", emoji: "🧘", text: "一个人过周末还如鱼得水……你不是没朋友，你是朋友里的充电宝型选手。" },
+  { qIndex: 12, choice: "A", key: "receipt_hunter", name: "人间账本", emoji: "🧾", text: "民宿 380、打车 200……你记得比记自己生日还清楚。会计师看了都想给你发offer。" },
+  { qIndex: 16, choice: "A", key: "cold_analyst", name: "冷酷分析机", emoji: "❄️", text: "朋友哭诉你先复盘错题？无情，但有效。你朋友骂完你还是照做了。" },
+  { qIndex: 22, choice: "B", key: "kind_liar", name: "善意谎言家", emoji: "🤥", text: "'太好吃了'说得毫无破绽。你的善意谎言已经可以申遗了。" },
+  { qIndex: 24, choice: "B", key: "ddl_fighter", name: "DDL 战神", emoji: "⏰", text: "还剩三天才开始？你不是拖延，你是在等灵感。反正最后都交了，对吧？（对吧？）" },
+  { qIndex: 26, choice: "B", key: "adventure",  name: "自由的风", emoji: "🌬️", text: "窗帘是死的，人是活的！这句话建议裱起来，放在每个 J 型人格的工位上。" }
+];
+
+// ============ 应用逻辑 ============
+(function(){
+"use strict";
+var $app=document.getElementById('app');
+var $toast=document.getElementById('toast');
+var $eggPop=document.getElementById('eggPop');
+var $eggPopInner=document.getElementById('eggPopInner');
+var LS_KEY='mbti_lab_v1';
+var state={page:'home',qIndex:0,answers:[],qStartTime:0,qDurations:[],flips:0,sessionStart:0,picked:-1,foundEggs:[]};
+
+// ---------- 存储 ----------
+function loadStore(){try{return JSON.parse(localStorage.getItem(LS_KEY))||{}}catch(e){return{}}}
+function saveStore(s){try{localStorage.setItem(LS_KEY,JSON.stringify(s))}catch(e){}}
+function getDex(){var s=loadStore();s.personas=s.personas||{};s.eggDex=s.eggDex||{};s.history=s.history||[];return s}
+
+// ---------- 工具 ----------
+function toast(msg){$toast.textContent=msg;$toast.classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(function(){$toast.classList.remove('show')},2200)}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function now(){return Date.now()}
+function fmtTime(ts){var d=new Date(ts);return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2)+' '+('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2)}
+function shuffle(arr){var a=arr.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
+
+// ---------- 彩蛋弹窗 ----------
+var eggPopTimer=null;
+function showEggPop(name,emoji,text,onOk){
+  $eggPopInner.innerHTML='<span class="pop-emoji">'+emoji+'</span><h3>🥚 发现隐藏彩蛋：'+esc(name)+'</h3><p>'+esc(text)+'</p><button class="btn" style="margin-top:16px" id="eggPopBtn">收下这份惊喜</button>';
+  $eggPop.classList.add('show');
+  var btn=document.getElementById('eggPopBtn');
+  btn.onclick=function(){$eggPop.classList.remove('show');if(onOk)onOk()};
+}
+
+// ---------- 计分 ----------
+function computeResult(answers){
+  var score={E:0,I:0,S:0,N:0,T:0,F:0,J:0,P:0};
+  QUESTIONS.forEach(function(q,i){
+    var pick=answers[i];
+    if(pick==='A')score[q.a]++;else if(pick==='B')score[q.b]++;
+  });
+  var type='';
+  type+=score.E>score.I?'E':'I';
+  type+=score.S>score.N?'S':'N';
+  type+=score.T>score.F?'T':'F';
+  type+=score.J>score.P?'J':'P';
+  var dims=[
+    {a:'E',b:'I',name:'能量来源',A:'外向 E',B:'内向 I'},
+    {a:'S',b:'N',name:'信息获取',A:'实感 S',B:'直觉 N'},
+    {a:'T',b:'F',name:'决策方式',A:'思考 T',B:'情感 F'},
+    {a:'J',b:'P',name:'生活态度',A:'计划 J',B:'随性 P'}
+  ].map(function(d){
+    var total=score[d.a]+score[d.b];
+    var pa=total>0?Math.round(score[d.a]/total*100):50;
+    return {name:d.name,aLabel:d.A,bLabel:d.B,pa:pa,pb:100-pa,winner:pa>=50?d.a:d.b,extreme:total>0&&(score[d.a]===total||score[d.b]===total),total:total,scoreA:score[d.a],scoreB:score[d.b]};
+  });
+  return {type:type,dims:dims,score:score};
+}
+
+// ---------- 彩蛋判定 ----------
+function detectEggs(res,ctx){
+  var eggs=[];var store=getDex();
+  // 1) 极端倾向
+  res.dims.forEach(function(d){
+    if(d.extreme){
+      var eg=EXTREME_EGGS[d.winner];
+      if(eg)eggs.push({cat:'extreme',key:'ext_'+d.winner,name:eg.name,emoji:eg.emoji,text:eg.text});
+    }
+  });
+  // 2) 行为彩蛋
+  var durs=ctx.durations.filter(function(x){return x>=0});
+  var avg=durs.length?durs.reduce(function(a,b){return a+b},0)/durs.length:0;
+  if(durs.length>=10&&avg<2000)eggs.push({cat:'behavior',key:'eg_speedrun',def:BEHAVIOR_EGGS.speedrun});
+  if(durs.some(function(x){return x>15000}))eggs.push({cat:'behavior',key:'eg_overthink',def:BEHAVIOR_EGGS.overthink});
+  if(ctx.flips>=3)eggs.push({cat:'behavior',key:'eg_flipflop',def:BEHAVIOR_EGGS.flipflop});
+  if(ctx.totalMs>8*60*1000)eggs.push({cat:'behavior',key:'eg_slowpoke',def:BEHAVIOR_EGGS.slowpoke});
+  if(durs.length>=10){
+    var m=avg;var sd=Math.sqrt(durs.reduce(function(s,x){return s+Math.pow(x-m,2)},0)/durs.length);
+    if(sd<700&&avg>2500&&avg<12000)eggs.push({cat:'behavior',key:'eg_goldilock',def:BEHAVIOR_EGGS.goldilock});
+  }
+  eggs=eggs.map(function(e){return e.def?{cat:e.cat,key:e.key,name:e.def.name,emoji:e.def.emoji,text:e.def.text}:e});
+  // 3) 题目彩蛋
+  QUESTION_EGGS.forEach(function(qe){
+    var ans=ctx.answers[qe.qIndex];
+    if((ans==='A'&&qe.choice==='A')||(ans==='B'&&qe.choice==='B'))
+      eggs.push({cat:'question',key:'q_'+qe.key,name:qe.name,emoji:qe.emoji,text:qe.text});
+  });
+  return eggs;
+}
+
+// ---------- 另类小报告 ----------
+function funReports(res,ctx){
+  var s=res.score,durs=ctx.durations.filter(function(x){return x>=0});
+  var avg=durs.length?durs.reduce(function(a,b){return a+b},0)/durs.length:3000;
+  function bar(v){return Math.max(6,Math.min(98,v))}
+  var waste=bar(38+(s.P*4)+(s.N*2.2)-(s.J*1.8)+(avg>6000?12:0));
+  var battery=bar(15+s.I*7-s.E*4+(s.P>4?10:0));
+  var hard=bar(22+s.T*6-s.F*3+(avg<2500?12:0));
+  var luck=bar(35+((s.N+s.F+s.P)*2.1)+((ctx.flips===0)?8:0));
+  var notes=[
+    '浓度 '+waste+'%：'+(waste>75?'土豆本豆，建议直接躺平开发废柴天赋':waste>50?'有废柴潜质，但偶尔会突然争气一下':'你废柴得不太专业，请反思'),
+    '今晚剩 '+battery+'%：'+(battery>70?'放心出门，你是全场焦点':battery>40?'能撑完一场饭局，回家路上会很安静':'建议随身携带充电宝和一个I人借口'),
+    '嘴硬 '+hard+'%：'+(hard>70?'“我错了”三个字在你的字典里是乱码':(hard>40?'嘴硬心软，认错全靠台阶':'嘴甜心软，认错速度堪比光速')),
+    '浓度 '+luck+'%：'+(luck>72?'近期锦鲤附体，买瓶水都可能再来一瓶':luck>48?'平常心，好运在路上堵车':'水逆退散！建议转发这条报告')
+  ];
+  return [
+    {def:FUN_REPORTS[0],val:waste,note:notes[0]},
+    {def:FUN_REPORTS[1],val:battery,note:notes[1]},
+    {def:FUN_REPORTS[2],val:hard,note:notes[2]},
+    {def:FUN_REPORTS[3],val:luck,note:notes[3]}
+  ];
+}
+
+// ---------- 页面：首页 ----------
+function renderHome(){
+  var dex=getDex();
+  var n=Object.keys(dex.personas).length;
+  var ne=Object.keys(dex.eggDex).length;
+  var totalEggKeys=Object.keys(EXTREME_EGGS).length+Object.keys(BEHAVIOR_EGGS).length+QUESTION_EGGS.length;
+  $app.innerHTML=
+  '<div class="hero fadeup">'+
+    '<span class="logo">🧾</span>'+
+    '<h1>MBTI人格鉴定所<span class="en">PERSONALITY LAB</span></h1>'+
+    '<p class="slogan muted">28 道废柴题，鉴定你的 16 型人格。题目不正经，计分很认真。</p>'+
+    '<div class="stat-row">'+
+      '<span class="pill">🎭 已点亮人格 <b>'+n+'</b>/16</span>'+
+      '<span class="pill">🥚 已发现彩蛋 <b>'+ne+'</b>/'+totalEggKeys+'</span>'+
+    '</div>'+
+    (dex.history.length?'<p class="muted" style="margin-top:6px">上次鉴定：<b>'+esc(dex.history[dex.history.length-1].type)+'</b> · '+esc(fmtTime(dex.history[dex.history.length-1].ts))+'</p>':'')+
+  '</div>'+
+  '<div class="card fadeup d1">'+
+    '<button class="btn" id="btnStart">🚀 开始鉴定</button>'+
+    '<div style="display:flex;gap:10px;margin-top:12px">'+
+      '<button class="btn ghost" style="flex:1" id="btnDex">📖 人格图鉴</button>'+
+      '<button class="btn ghost" style="flex:1" id="btnHist">🗂️ 鉴定档案</button>'+
+    '</div>'+
+    '<p class="muted center" style="margin-top:14px">全程约 5 分钟 · 结果仅保存在本机 · 纯属娱乐 🎈</p>'+
+  '</div>'+
+  '<div class="card fadeup d2">'+
+    '<b>📢 鉴定须知</b>'+
+    '<p class="muted" style="margin-top:6px">本所为娱乐向快测，不构成任何心理学专业意见；人格没有好坏，只有不同。数据只存在你的浏览器里，清空浏览器数据会丢失图鉴记录。</p>'+
+  '</div>'+
+  '<p class="footer-note">MBTI人格鉴定所 · v1.0 · 手工打造，无联网，无广告</p>';
+  document.getElementById('btnStart').onclick=function(){state={page:'quiz',qIndex:0,answers:new Array(QUESTIONS.length).fill(null),qStartTime:now(),qDurations:[],flips:0,sessionStart:now(),picked:-1,foundEggs:[],order:shuffle(QUESTIONS.map(function(_,i){return i}))};renderQuiz()};
+  document.getElementById('btnDex').onclick=function(){state.page='dex';renderDex()};
+  document.getElementById('btnHist').onclick=function(){state.page='hist';renderHist()};
+}
+
+// ---------- 页面：答题 ----------
+function renderQuiz(){
+  var qi=state.qIndex;
+  var total=QUESTIONS.length;
+  var q=QUESTIONS[state.order[qi]];
+  $app.innerHTML=
+  '<div class="progress-wrap"><div class="progress-bar"><i style="width:'+Math.round(qi/total*100)+'%"></i></div><span class="progress-num">'+(qi+1)+' / '+total+'</span></div>'+
+  '<div class="card qcard fadeup" id="qcard">'+
+    '<span class="pill qtag">🧾 鉴定中 · 第 '+(qi+1)+' 题</span>'+
+    '<h2>'+esc(q.q)+'</h2>'+
+    '<div class="opts">'+
+      '<button class="opt" data-c="A"><span class="badge">A</span><span>'+esc(q.A)+'</span></button>'+
+      '<button class="opt" data-c="B"><span class="badge">B</span><span>'+esc(q.B)+'</span></button>'+
+    '</div>'+
+  '</div>'+
+  '<div class="q-nav">'+
+    '<button class="back" id="btnBack"'+(qi===0?' disabled':'')+'>← 上一题</button>'+
+    '<span class="muted">凭第一直觉选，别想太久</span>'+
+  '</div>';
+  var picked=null;
+  var opts=$app.querySelectorAll('.opt');
+  Array.prototype.forEach.call(opts,function(o){
+    o.onclick=function(){
+      if(picked)return;
+      var dur=now()-state.qStartTime;
+      state.qDurations[state.order[qi]]=dur;
+      picked=o.getAttribute('data-c');
+      state.answers[state.order[qi]]=picked;
+      o.classList.add('picked');
+      if(state.qDurations[state.order[qi]]>400&&dur<8000){/* noop */}
+      setTimeout(function(){
+        state.qIndex++;state.qStartTime=now();
+        if(state.qIndex>=total)renderResult();else renderQuiz();
+      },260);
+    };
+  });
+  var back=document.getElementById('btnBack');
+  if(back&&qi>0){back.onclick=function(){
+    if(state.answers[state.order[state.qIndex]]!==null)state.flips++;
+    state.qIndex--;
+    state.qDurations[state.order[state.qIndex]]=-1;
+    state.answers[state.order[state.qIndex]]=null;
+    state.qStartTime=now();renderQuiz();
+  }}
+}
+
+// ---------- 页面：结果 ----------
+function renderResult(){
+  var ctx={answers:state.answers,durations:state.qDurations,flips:state.flips,totalMs:now()-state.sessionStart};
+  var res=computeResult(state.answers);
+  var role=ROLES[res.type];
+  var eggs=detectEggs(res,ctx);
+  var reports=funReports(res,ctx);
+  // 存储
+  var dex=getDex();
+  var newPersona=!dex.personas[res.type];
+  dex.personas[res.type]={ts:now()};
+  eggs.forEach(function(e){dex.eggDex[e.key]={ts:now()}});
+  dex.history.push({ts:now(),type:res.type,eggs:eggs.map(function(e){return e.name})});
+  if(dex.history.length>50)dex.history=dex.history.slice(-50);
+  saveStore(dex);
+  var n=Object.keys(dex.personas).length;
+  var dimsHtml=res.dims.map(function(d){
+    var left=d.pa;
+    return '<div class="dim"><div class="dim-head"><span>'+esc(d.name)+'</span><span>'+(d.pa===50?'势均力敌':esc(d.winner)+' 倾向')+'</span></div>'+
+    '<div class="dim-bar"><i style="width:'+left+'%"></i></div>'+
+    '<div class="pct"><span>'+esc(d.aLabel)+' '+d.pa+'%</span><span>'+esc(d.bLabel)+' '+d.pb+'%</span></div>'+
+    (d.extreme?'<div class="tag" style="margin-top:6px;background:#FFD9E2;color:#C24E6C">⚡ 100% 极端倾向</div>':'')+
+    '</div>';
+  }).join('');
+  var eggsHtml=eggs.length?eggs.map(function(e){
+    return '<div class="egg"><span class="egg-emoji">'+e.emoji+'</span><div><div class="egg-name">'+esc(e.name)+'</div><div class="egg-text">'+esc(e.text)+'</div></div></div>';
+  }).join(''):'<p class="muted center" style="padding:8px 0">本轮暂未触发彩蛋，换个答法试试？</p>';
+  var repHtml=reports.map(function(r){
+    return '<div class="report"><div class="rep-head"><span class="rep-name">'+r.def.emoji+' '+esc(r.def.name)+'</span><span class="rep-val">'+r.val+'%</span></div>'+
+    '<div class="rep-bar"><i style="width:'+r.val+'%"></i></div><div class="rep-note">'+esc(r.note)+'</div></div>';
+  }).join('');
+  $app.innerHTML=
+  '<div class="card result-hero fadeup">'+
+    '<span class="muted">🧾 鉴定完成 · 你的结果是</span>'+
+    '<div class="type" style="margin:4px 0">'+res.type+'</div>'+
+    '<span class="role-emoji">'+role.emoji+'</span>'+
+    '<div class="role-name">'+esc(role.name)+'</div>'+
+    '<div class="role-title">'+esc(role.title)+'</div>'+
+    '<div class="quote">「'+esc(role.quote)+'」</div>'+
+    (newPersona?'<div class="tag" style="margin-top:12px;background:#D9F2E6;color:#2E8B62">🎉 新人格解锁！图鉴 '+n+'/16</div>':'<div class="tag" style="margin-top:12px">🎭 图鉴 '+n+'/16</div>')+
+  '</div>'+
+  '<div class="card fadeup d1"><h3 style="margin-bottom:12px">🪪 角色小传</h3><p>'+esc(role.bio)+'</p><div style="margin-top:10px">'+role.tags.map(function(t){return '<span class="tag">#'+esc(t)+'</span>'}).join('')+'</div></div>'+
+  '<div class="card fadeup d2"><h3 style="margin-bottom:12px">📊 四维倾向</h3><div class="dims">'+dimsHtml+'</div></div>'+
+  '<div class="card fadeup d3"><h3 style="margin-bottom:12px">🥚 本轮彩蛋（'+eggs.length+'）</h3>'+eggsHtml+'</div>'+
+  '<div class="card fadeup d4"><h3 style="margin-bottom:12px">📋 另类小报告</h3>'+repHtml+'<p class="muted" style="margin-top:4px">* 小报告数值由答题风格实时演算，纯属娱乐，请勿当真</p></div>'+
+  '<div class="card fadeup d4">'+
+    '<button class="btn" id="btnAgain">🔄 再测一次（换个答法解锁更多彩蛋）</button>'+
+    '<div style="display:flex;gap:10px;margin-top:12px">'+
+      '<button class="btn ghost" style="flex:1" id="btnDex2">📖 图鉴</button>'+
+      '<button class="btn ghost" style="flex:1" id="btnHome2">🏠 回首页</button>'+
+    '</div>'+
+  '</div>'+
+  '<p class="footer-note">本结果为娱乐向快测，不构成心理学专业意见 · MBTI人格鉴定所</p>';
+  document.getElementById('btnAgain').onclick=function(){renderHome();document.getElementById('btnStart').click()};
+  document.getElementById('btnDex2').onclick=function(){state.page='dex';renderDex()};
+  document.getElementById('btnHome2').onclick=function(){state.page='home';renderHome()};
+  // 新彩蛋弹窗（挑最新的一个）
+  var fresh=eggs.filter(function(e){return !state.foundEggs.includes(e.key)});
+  if(fresh.length){setTimeout(function(){showEggPop(fresh[0].name,fresh[0].emoji,fresh[0].text)},600)}
+}
+
+// ---------- 页面：图鉴 ----------
+function renderDex(){
+  var dex=getDex();
+  var order=['INTJ','INTP','ENTJ','ENTP','INFJ','INFP','ENFJ','ENFP','ISTJ','ISFJ','ESTJ','ESFJ','ISTP','ISFP','ESTP','ESFP'];
+  var cells=order.map(function(t){
+    var r=ROLES[t];var lit=!!dex.personas[t];
+    return '<div class="dex-cell'+(lit?'':' locked')+'">'+
+      '<span class="d-emoji">'+(lit?r.emoji:'❔')+'</span>'+
+      '<div class="d-type">'+(lit?t:'？？？')+'</div>'+
+      '<div class="d-name">'+(lit?esc(r.name):'未解锁')+'</div></div>';
+  }).join('');
+  var totalEggKeys=Object.keys(EXTREME_EGGS).length+Object.keys(BEHAVIOR_EGGS).length+QUESTION_EGGS.length;
+  var eggList=[];
+  Object.keys(EXTREME_EGGS).forEach(function(k){var e=EXTREME_EGGS[k];eggList.push({key:'ext_'+k,name:e.name,emoji:e.emoji,text:e.text})});
+  Object.keys(BEHAVIOR_EGGS).forEach(function(k){var e=BEHAVIOR_EGGS[k];eggList.push({key:'eg_'+k,name:e.name,emoji:e.emoji,text:'触发条件：'+e.cond})});
+  QUESTION_EGGS.forEach(function(qe){eggList.push({key:'q_'+qe.key,name:qe.name,emoji:qe.emoji,text:qe.text})});
+  var eggHtml=eggList.map(function(e){
+    var done=!!dex.eggDex[e.key];
+    return '<div class="egg'+(done?' done':'')+'"><span class="egg-emoji">'+(done?e.emoji:'🥚')+'</span><div><div class="egg-name">'+(done?esc(e.name):'？？？')+'</div><div class="egg-text">'+(done?esc(e.text):'尚未发现 · 换种答法试试')+'</div></div></div>';
+  }).join('');
+  var n=Object.keys(dex.personas).length;
+  $app.innerHTML=
+  '<div class="card"><div class="dex-head"><h3>🎭 人格图鉴</h3><span class="pill">已收集 <b>'+n+'</b>/16</span></div><div class="dex-grid">'+cells+'</div></div>'+
+  '<div class="card eggdex"><div class="dex-head"><h3>🥚 彩蛋图鉴</h3><span class="pill">已发现 <b>'+Object.keys(dex.eggDex).length+'</b>/'+totalEggKeys+'</span></div>'+eggHtml+'</div>'+
+  '<button class="btn ghost" id="btnBackHome" style="margin-top:4px">← 返回</button>';
+  document.getElementById('btnBackHome').onclick=function(){state.page='home';renderHome()};
+}
+
+// ---------- 页面：档案 ----------
+function renderHist(){
+  var dex=getDex();
+  var hist=dex.history.slice().reverse();
+  var html=hist.length?hist.map(function(h){
+    return '<div class="hist-item"><div><span class="h-type">'+esc(h.type)+'</span> '+esc(ROLES[h.type].emoji)+' <span class="muted">'+(h.eggs&&h.eggs.length?'🥚×'+h.eggs.length:'')+'</span></div><span class="muted">'+esc(fmtTime(h.ts))+'</span></div>';
+  }).join(''):'<p class="muted center" style="padding:14px 0">暂无鉴定记录，快去开始第一次鉴定吧！</p>';
+  $app.innerHTML=
+  '<div class="card"><div class="dex-head"><h3>🗂️ 鉴定档案</h3><span class="pill">共 <b>'+hist.length+'</b> 次</span></div>'+html+'</div>'+
+  '<div style="display:flex;gap:10px"><button class="btn ghost" style="flex:1" id="btnBackHome">← 返回</button><button class="btn ghost" style="flex:1" id="btnClear">🗑️ 清空档案</button></div>';
+  document.getElementById('btnBackHome').onclick=function(){state.page='home';renderHome()};
+  document.getElementById('btnClear').onclick=function(){
+    if(confirm('确定清空全部档案和图鉴吗？此操作不可恢复。')){saveStore({});state.page='home';renderHome();toast('已清空，一切重新开始')}
+  };
+}
+
+// ---------- 启动 ----------
+renderHome();
+})();
+
+</script>
+</body>
+</html>
